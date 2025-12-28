@@ -5,7 +5,8 @@ fn main() {
     let mut input = File::open("input.txt").expect("open failed");
     let mut buffer = String::new();
     input.read_to_string(&mut buffer).expect("failed to read");
-    println!("Accessible: {}", get_accessible_rolls_count(buffer))
+    let accessible_rolls = get_accessible_rolls_count(buffer, true);
+    println!("Accessible: {}", accessible_rolls)
 }
 
 struct Grid(Vec<Vec<bool>>);
@@ -47,20 +48,36 @@ impl Grid {
         }
         cell_neighbors
     }
+
+    fn remove_roll(&mut self, row_idx: usize, col_idx: usize) {
+        self.0[row_idx][col_idx] = false;
+    }
 }
 
-fn get_accessible_rolls_count(input: impl AsRef<str>) -> u32 {
-    let grid = Grid::build(input);
+fn get_accessible_rolls_count(input: impl AsRef<str>, remove_rolls: bool) -> u32 {
+    let mut grid = Grid::build(input);
     let mut accessible_count = 0;
-    for (row_idx, row) in grid.0.iter().enumerate() {
-        for (col_idx, cell) in row.iter().enumerate() {
-            if !cell {
-                continue;
+    while true {
+        let mut rolls_to_remove = Vec::new();
+        for (row_idx, row) in grid.0.iter().enumerate() {
+            for (col_idx, cell) in row.iter().enumerate() {
+                if !cell {
+                    continue;
+                }
+                if grid.get_neighbors(row_idx, col_idx) >= 4 {
+                    continue;
+                }
+                if remove_rolls {
+                    rolls_to_remove.push((row_idx, col_idx));
+                }
+                accessible_count += 1
             }
-            if grid.get_neighbors(row_idx, col_idx) >= 4 {
-                continue;
-            }
-            accessible_count += 1
+        }
+        if rolls_to_remove.len() == 0 || !remove_rolls {
+            break;
+        }
+        for (row_idx, col_idx) in rolls_to_remove {
+            grid.remove_roll(row_idx, col_idx);
         }
     }
     accessible_count
@@ -85,9 +102,32 @@ mod tests {
                 @.@@@.@@@@
                 .@@@@@@@@.
                 @.@.@@@.@.
-                "
+                ",
+                false
             ),
             13
+        );
+    }
+
+    #[test]
+    fn test_pt_2_ex() {
+        assert_eq!(
+            get_accessible_rolls_count(
+                "
+                ..@@.@@@@.
+                @@@.@.@.@@
+                @@@@@.@.@@
+                @.@@@@..@.
+                @@.@@@@.@@
+                .@@@@@@@.@
+                .@.@.@.@@@
+                @.@@@.@@@@
+                .@@@@@@@@.
+                @.@.@@@.@.
+                ",
+                true
+            ),
+            43
         );
     }
 
