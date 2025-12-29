@@ -2,6 +2,8 @@ use std::{fs::File, io::Read};
 
 // https://adventofcode.com/2025/day/4
 fn main() {
+    env_logger::init();
+
     let mut input = File::open("input.txt").expect("open failed");
     let mut buffer = String::new();
     input.read_to_string(&mut buffer).expect("failed to read");
@@ -26,7 +28,7 @@ impl Grid {
         let y_max = (row_idx + 1).min(self.0.len() - 1);
         let x_min = col_idx.saturating_sub(1);
         let x_max = (col_idx + 1).min(self.0[row_idx].len() - 1);
-        println!(
+        log::debug!(
             "y_min={} y_max={}, x_min={} x_max={}",
             y_min, y_max, x_min, x_max,
         );
@@ -34,15 +36,14 @@ impl Grid {
         for y_i in y_min..=y_max {
             for x_i in x_min..=x_max {
                 if (y_i, x_i) == (row_idx, col_idx) {
-                    println!("Skipping self (row {}, col {})", y_i, x_i);
+                    log::trace!("Skipping self (row {}, col {})", y_i, x_i);
                     continue;
                 }
-                print!("Checking row {}, col {}: ", y_i, x_i);
                 if self.0[y_i][x_i] {
                     cell_neighbors += 1;
-                    println!("hit")
+                    log::trace!("Checking row {}, col {}: hit", y_i, x_i);
                 } else {
-                    println!("miss")
+                    log::trace!("Checking row {}, col {}: miss", y_i, x_i);
                 }
             }
         }
