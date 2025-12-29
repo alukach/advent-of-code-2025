@@ -1,12 +1,10 @@
-use std::{fs::File, io::Read};
+use std::fs::read_to_string;
 
 // https://adventofcode.com/2025/day/4
 fn main() {
     env_logger::init();
 
-    let mut input = File::open("input.txt").expect("open failed");
-    let mut buffer = String::new();
-    input.read_to_string(&mut buffer).expect("failed to read");
+    let buffer = read_to_string("input.txt").expect("failed to read");
     let accessible_rolls = get_accessible_rolls_count(buffer, true);
     println!("Accessible: {}", accessible_rolls)
 }
@@ -15,7 +13,7 @@ struct Grid(Vec<Vec<bool>>);
 
 impl Grid {
     fn build(lines: impl AsRef<str>) -> Self {
-        let mut grid = Vec::<Vec<bool>>::new();
+        let mut grid = Vec::new();
         for line in lines.as_ref().trim().lines().map(|l| l.trim()) {
             grid.push(line.chars().map(|c| c == '@').collect());
         }
@@ -30,7 +28,10 @@ impl Grid {
         let x_max = (col_idx + 1).min(self.0[row_idx].len() - 1);
         log::debug!(
             "y_min={} y_max={}, x_min={} x_max={}",
-            y_min, y_max, x_min, x_max,
+            y_min,
+            y_max,
+            x_min,
+            x_max,
         );
 
         for y_i in y_min..=y_max {
@@ -58,7 +59,7 @@ impl Grid {
 fn get_accessible_rolls_count(input: impl AsRef<str>, remove_rolls: bool) -> u32 {
     let mut grid = Grid::build(input);
     let mut accessible_count = 0;
-    while true {
+    loop {
         let mut rolls_to_remove = Vec::new();
         for (row_idx, row) in grid.0.iter().enumerate() {
             for (col_idx, cell) in row.iter().enumerate() {
@@ -74,7 +75,7 @@ fn get_accessible_rolls_count(input: impl AsRef<str>, remove_rolls: bool) -> u32
                 accessible_count += 1
             }
         }
-        if rolls_to_remove.len() == 0 || !remove_rolls {
+        if rolls_to_remove.is_empty() || !remove_rolls {
             break;
         }
         for (row_idx, col_idx) in rolls_to_remove {
