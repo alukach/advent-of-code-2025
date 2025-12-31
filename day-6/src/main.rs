@@ -14,9 +14,13 @@ fn main() {
 }
 
 fn process(input: impl AsRef<str>, style: MathStyle) -> u64 {
-    let mut problems = Vec::<Problem>::new();
+    let mut problems = Vec::new();
     let mut values = Vec::new();
-    let lines = input.as_ref().split('\n').filter(|l| !l.trim().is_empty());
+    let lines = input
+        .as_ref()
+        .split('\n')
+        .filter(|l| !l.trim().is_empty())
+        .collect::<Vec<&str>>();
 
     match style {
         MathStyle::Traditional => {
@@ -50,11 +54,7 @@ fn process(input: impl AsRef<str>, style: MathStyle) -> u64 {
             /*
                 Rather than line-by-line, we iterate column by column (per character)
             */
-            let num_cols = lines
-                .clone()
-                .next()
-                .expect("Failed to get first line")
-                .len();
+            let num_cols = lines.first().expect("Failed to get first line").len();
 
             for col_idx in 0..num_cols {
                 // Create an empty value for each column
@@ -84,7 +84,7 @@ fn process(input: impl AsRef<str>, style: MathStyle) -> u64 {
                             col_val,
                             col_idx
                         );
-                        col_val.push_str(&col_char.to_string());
+                        col_val.push(col_char);
                     }
                 }
 
@@ -147,7 +147,6 @@ enum MathStyle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use indoc::indoc;
 
     #[test]
     fn test_pt_1_ex() {
